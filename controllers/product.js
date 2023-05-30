@@ -4,7 +4,7 @@ const { getCategoryById } = require("./category");
 
 
 const getProducts = async (req = request, res = response) => {
-    const { offset = 0, limit = 10 } = req.query;
+    const { offset = 0, limit = 100 } = req.query;
     const queryStatus = { status: true };
 
     const [totalProducts, products] = await Promise.all([

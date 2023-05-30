@@ -41,7 +41,14 @@ const searchCategories = async (query = '', res = response) => {
 const searchProducts = async (query = '', res = response) => {
     const isMongoId = isValidObjectId(query);
 
-    if (isMongoId) {
+    const regex = new RegExp(query, 'i');
+    const products = await Product.find({
+        $or: [{ name: regex }, { description: regex }, { reference: regex }],
+        $and: [{ status: true }]
+    })
+        .populate('category', 'name');
+
+    if (!products && isMongoId) {
         const product = await Product.findById(query)
             .populate('category', 'name');
         return res.json({
@@ -49,28 +56,22 @@ const searchProducts = async (query = '', res = response) => {
         });
     }
 
-    const regex = new RegExp(query, 'i');
-
-    const products = await Product.find({
-        $or: [{ name: regex }, { description: regex }, { reference: regex }],
-        $and: [{ status: true }]
-    })
-        .populate('category', 'name');;
-
     res.json({
         results: products
     });
+
+
 }
 
 const searchProductsByCategory = async (query = '', res = response) => {
     const isMongoId = isValidObjectId(query);
     let category = '';
 
-    if (isMongoId) {
+    const regex = new RegExp(query, 'i');
+    category = await Category.findOne({ name: regex, status: true });
+
+    if (!category && isMongoId) {
         category = await Category.findById(query);
-    } else {
-        const regex = new RegExp(query, 'i');
-        category = await Category.findOne({ name: regex, status: true });
     }
 
     if (category) {
@@ -80,7 +81,7 @@ const searchProductsByCategory = async (query = '', res = response) => {
         return res.json({
             results: products
         });
-    } 
+    }
 
     res.json({
         results: []
@@ -112,9 +113,9 @@ const searchUser = async (query = '', res = response) => {
 const search = async (req = request, res = response) => {
     const { collection, query } = req.params;
 
-    if (!collectionsAuthorized .includes(collection)) {
+    if (!collectionsAuthorized.includes(collection)) {
         return res.status(400).json({
-            message: `Calecciones permitidas: ${collectionsAuthorized }`
+            message: `Calecciones permitidas: ${collectionsAuthorized}`
         });
     }
 
