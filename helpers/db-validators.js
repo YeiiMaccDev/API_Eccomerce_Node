@@ -2,7 +2,8 @@ const {
     Category,
     Product,
     Role,
-    User
+    User,
+    Order
 } = require('../models');
 
 const isValidRole = async (role = '') => {
@@ -47,6 +48,14 @@ const existsProductById = async (id = '') => {
     }
 }
 
+const existsOrderById = async (id = '') => {
+    const existsOrder = await Order.findById(id);
+
+    if (!existsOrder) {
+        throw new Error(`El id ' ${id} ' no está registrado.`);
+    }
+}
+
 /**
  * Validate authorized collections.
  */
@@ -59,6 +68,16 @@ const iscollectionsAuthorized = (collection = '', collections = []) => {
     return true;
 }
 
+/**
+ * Validates if each array position is an object.
+ */
+const isArrayOfObject = (list = []) => {
+    if (!list.every((item) => typeof item === 'object')) {
+        throw new Error('Cada item deben ser un objeto.');
+    }
+    return true;
+}
+
 
 module.exports = {
     isValidRole,
@@ -66,5 +85,7 @@ module.exports = {
     existsCategoryById,
     existsProductById,
     existsUserById,
-    iscollectionsAuthorized
+    existsOrderById,
+    iscollectionsAuthorized,
+    isArrayOfObject
 }
