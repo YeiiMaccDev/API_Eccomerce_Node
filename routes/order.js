@@ -5,10 +5,9 @@ const {
     validateFields,
     isAdminRole,
     validateJWT,
-    isSameUserOrAdminRole,
-    validateOrderStatus,
     validateOrderDetails,
-    validateProductData
+    validateProductData,
+    validateDuplicateProducts
 } = require("../middlewares");
 
 const {
@@ -53,6 +52,8 @@ router.post('/', [
     check('products', 'Lista de productos debe contener al menos un producto.').isArray({ min: 1 }),
     validateFields,
     check('products').custom(productsOrder => isArrayOfObject(productsOrder)),
+    validateFields,
+    validateDuplicateProducts,
     validateFields,
     validateProductData,
     validateFields,

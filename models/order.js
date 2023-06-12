@@ -28,7 +28,7 @@ const OrderSchema = Schema({
         default: 'pending'
     },
     total: {
-        type: Number,
+        type: Schema.Types.Decimal128,
         default: 0
     },
     status: {
@@ -39,8 +39,11 @@ const OrderSchema = Schema({
 }, { timestamps: true });
 
 OrderSchema.methods.toJSON = function () {
-    const { __v, status, ...data } = this.toObject();
-    return data;
+    const { __v, status, total, ...data } = this.toObject();
+    return {
+        total: (total) ? parseFloat(total) : 0,
+        ...data
+    };
 }
 
 

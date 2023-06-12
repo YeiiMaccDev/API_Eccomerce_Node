@@ -1,5 +1,5 @@
 const { request, response } = require("express");
-const { Order, Product } = require("../models");
+const { Order, Product, OrderDetail } = require("../models");
 const { isValidObjectId } = require("mongoose");
 
 /**
@@ -18,32 +18,61 @@ const validateOrderStatus = (req = request, res = response, next) => {
 
 
 /**
+ * Validate that the products in the list are not duplicated.
+ */
+const validateDuplicateProducts = async (req = request, res = response, next) => {
+  const { products } = req.body;
+  const ids = {};
+
+  for (const product of products) {
+    if (ids[product.id]) {
+      return res.status(400).json({
+        message: `Se ha encontrado un producto duplicado con el ID:  ${product.id} . Enviar sólo un producto con la cantidad requerida. `
+      });
+    }
+    ids[product.id] = true;
+  }
+
+  next();
+}
+
+/**
  * Validate that the products have a valid id and quantity.
  */
 const validateProductData = async (req = request, res = response, next) => {
   const { products } = req.body;
 
-    for (const product of products) {
+  const errors = [];
 
-      if (!product.id) {
-        return res.status(400).json({ error: `El producto no contiene id. Producto: ${JSON.stringify(product)}` });
-      }
+  products.forEach(product => {
 
-      const isMongoId = isValidObjectId(product.id);
-      if (!isMongoId) {
-        return res.status(400).json({ error: `El ID del producto ${product.id} no es un ID válido.` });
-      }
-
-      if (!product.quantity) {
-        return res.status(400).json({ error: `El producto con id ${product.id} no incluye la cantidad.` });
-      }
-
-      if (!Number.isInteger(product.quantity) || product.quantity <= 0) {
-        return res.status(400).json({ error: `La cantidad del producto debe ser un número entero mayor a cero. Cantidad: ${product.quantity}.` });
-      }
+    if (!product.id) {
+      errors.push({ error: `El producto no contiene id. Producto: ${JSON.stringify(product)}` });
+      return false;
     }
 
-    next();
+    const isMongoId = isValidObjectId(product.id);
+    if (!isMongoId) {
+      errors.push({ error: `El ID del producto ${product.id} no es un ID válido.` });
+      return false;
+    }
+
+    if (!product.quantity) {
+      errors.push({ error: `El producto con id ${product.id} no incluye la cantidad.` });
+      return false;
+    }
+
+    if (!Number.isInteger(product.quantity) || product.quantity <= 0) {
+      errors.push({ error: `La cantidad del producto debe ser un número entero mayor a cero. Cantidad: ${product.quantity}.` });
+      return false;
+    }
+  });
+
+  if (errors.length > 0) {
+    return res.status(400).json(errors);
+  }
+
+  next();
 }
 
 
@@ -53,25 +82,66 @@ const validateProductData = async (req = request, res = response, next) => {
 const validateOrderDetails = async (req = request, res = response, next) => {
   const { products } = req.body;
   try {
+    const productIds = products.map(product => product.id);
+    const productResults = await Product.find({ _id: { $in: productIds } });
 
-    for (const product of products) {
-      const productExist = await Product.findById(product.id);
+    const errors = [];
+
+    products.forEach(product => {
+      const productExist = productResults.find(result => result._id.toString() === product.id);
+
       if (!productExist) {
-        return res.status(400).json({ error: `Producto no encontrado para el ID ${product.id}` });
-      } else {
-        if (product.quantity > productExist.stock) {
-          return res.status(400).json({ 
-            error: `Cantidad excedida. Stock: ${productExist.stock}, cantidad solicitada: ${product.quantity}, producto ${product.name} `
-          });
-        }
-
+        errors.push({ error: `Producto no encontrado para el ID ${product.id}` });
+        return false;
       }
+
+      if (product.quantity > productExist.stock) {
+        errors.push({ error: `Cantidad excedida. Stock: ${productExist.stock}, cantidad solicitada: ${product.quantity}, producto ${productExist.name}` });
+        return false;
+      }
+
+      return true;
+    });
+
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
     }
 
     next();
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al validar los detalles de la orden' });
+    return res.status(500).json({ error: 'Error al validar los detalles del pedido' });
+  }
+}
+
+
+/**
+ * Validate that the products sent to be removed from the order exist.
+ */
+const validateProductExistInOrder = async (req = request, res = response, next) => {
+  try {
+    const { idOrder } = req.params;
+    const { details } = req.body;
+
+    const ids = details.map(detail => detail.id);
+    const orderDetails = await OrderDetail.find({ order: idOrder, _id: { $in: ids } });
+    const errors = [];
+    details.forEach(detail => {
+      const detailExist = orderDetails.find(detailDB => detailDB._id.toString() === detail.id);
+
+      if (!detailExist) {
+        errors.push({ error: `Detalle de pedido no encontrado en el pedio, Id: ${detail.id}` });
+      }
+    });
+
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al validar los detalles del pedido.' });
   }
 }
 
@@ -79,6 +149,8 @@ const validateOrderDetails = async (req = request, res = response, next) => {
 
 module.exports = {
   validateOrderStatus,
+  validateDuplicateProducts,
   validateOrderDetails,
-  validateProductData
+  validateProductData,
+  validateProductExistInOrder
 }

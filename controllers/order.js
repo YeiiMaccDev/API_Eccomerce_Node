@@ -1,5 +1,6 @@
 const { request, response } = require("express");
-const { Order } = require("../models");
+const { Order, OrderDetail } = require("../models");
+const { createOrderDetail } = require("./orderDetail");
 
 
 const getOrders = async (req = request, res = response) => {
@@ -23,16 +24,25 @@ const getOrders = async (req = request, res = response) => {
 
 const getOrdersById = async (req = request, res = response) => {
     const { id } = req.params;
-    const orders = await Order.findById(id);
-    return res.json(orders);
+    
+    const [order, details] = await Promise.all([
+        Order.find({_id: id, status: true})
+            .populate('customer', 'name'),
+        OrderDetail.find({order: id, status: true})
+            .populate('product', 'name')
+    ]);
+    return res.json({order, details});
 }
 
 const createOrder = async (req = request, res = response) => {
-    const { productsList } = req.body;
     const customer = req.authenticatedUser._id;
     const order = new Order({ customer });
 
     await order.save();
+    
+    req.body.idOrder = order._id;
+    return createOrderDetail(req, res);
+
     return res.json(order);
 }
 
@@ -79,7 +89,7 @@ const deleteOrder = async (req = request, res = response) => {
     const { id } = req.params;
     const user = req.authenticatedUser._id;
 
-    const order = await Order.findByIdAndUpdate(id, { status: false, user }, { new: true });
+    const order = await Order.findByIdAndUpdate(id, { status: false }, { new: true });
     res.json(order);
 }
 
