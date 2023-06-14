@@ -12,6 +12,7 @@ class Server {
         this.port = process.env.PORT || 8080;
 
         this.paths = {
+            address: '/api/address',
             auth: '/api/auth',
             categories: '/api/categories',
             orders: '/api/orders',
@@ -57,6 +58,7 @@ class Server {
 
 
     routes() {
+        this.app.use(this.paths.address, require('../routes/address'))
         this.app.use(this.paths.auth, require('../routes/auth'))
         this.app.use(this.paths.categories, require('../routes/category'))
         this.app.use(this.paths.orders, require('../routes/order'))

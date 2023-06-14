@@ -52,8 +52,11 @@ const ProductSchema = Schema({
 });
 
 ProductSchema.methods.toJSON = function () {
-    const { __v, status, ...data } = this.toObject();
-    return data;
+    const { __v, status, price, ...data } = this.toObject();
+    return {
+        price: (price) ? parseFloat(price) : 0,
+        ...data,
+    };
 }
 
 

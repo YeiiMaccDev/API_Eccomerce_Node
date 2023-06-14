@@ -36,7 +36,7 @@ const OrderDetailSchema = Schema({
 }, { timestamps: true });
 
 OrderDetailSchema.methods.toJSON = function () {
-    const { __v, price, total, ...data } = this.toObject();
+    const { __v, status, price, total, ...data } = this.toObject();
     return {
         total: (total) ? parseFloat(total) : 0,
         price: (price) ? parseFloat(price) : 0,

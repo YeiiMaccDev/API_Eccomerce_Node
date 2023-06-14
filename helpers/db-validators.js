@@ -3,7 +3,8 @@ const {
     Product,
     Role,
     User,
-    Order
+    Order,
+    Address
 } = require('../models');
 
 const isValidRole = async (role = '') => {
@@ -56,6 +57,14 @@ const existsOrderById = async (id = '') => {
     }
 }
 
+const existsAddressById = async (id = '') => {
+    const existsAddress = await Address.findById(id);
+
+    if (!existsAddress) {
+        throw new Error(`El id ' ${id} ' no está registrado.`);
+    }
+}
+
 /**
  * Validate authorized collections.
  */
@@ -81,6 +90,7 @@ const isArrayOfObject = (list = []) => {
 
 module.exports = {
     isValidRole,
+    existsAddressById,
     existsEmail,
     existsCategoryById,
     existsProductById,

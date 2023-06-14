@@ -1,4 +1,5 @@
 
+const Address = require('./address');
 const Category = require('./category');
 const Product = require('./product');
 const Order = require('./order');
@@ -9,6 +10,7 @@ const User = require('./user');
 
 
 module.exports = {
+    Address,
     Category,
     Order,
     OrderDetail,
