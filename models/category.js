@@ -17,7 +17,7 @@ const CategorySchema = Schema({
         ref: 'User',
         required: true
     }
-});
+}, { timestamps: true });
 
 CategorySchema.methods.toJSON = function() {
     const { __v, status, ...data} = this.toObject();

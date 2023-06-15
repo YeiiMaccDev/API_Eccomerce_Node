@@ -4,7 +4,8 @@ const {
     Role,
     User,
     Order,
-    Address
+    Address,
+    Coupon
 } = require('../models');
 
 const isValidRole = async (role = '') => {
@@ -65,6 +66,14 @@ const existsAddressById = async (id = '') => {
     }
 }
 
+const existsCouponById = async (id = '') => {
+    const existsCoupon = await Coupon.findById(id);
+
+    if (!existsCoupon) {
+        throw new Error(`El id ' ${id} ' no está registrado.`);
+    }
+}
+
 /**
  * Validate authorized collections.
  */
@@ -93,6 +102,7 @@ module.exports = {
     existsAddressById,
     existsEmail,
     existsCategoryById,
+    existsCouponById,
     existsProductById,
     existsUserById,
     existsOrderById,

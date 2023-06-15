@@ -38,8 +38,8 @@ const AddressSchema = Schema({
         type: Boolean,
         default: true,
         required: true
-    },
-});
+    }
+}, { timestamps: true });
 
 AddressSchema.methods.toJSON = function () {
     const { __v, status, ...data } = this.toObject();

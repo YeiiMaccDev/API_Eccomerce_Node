@@ -1,12 +1,23 @@
 const { request, response } = require("express");
-const { Address } = require("../models");
+const { Address, Coupon } = require("../models");
 
 
 const getAddress = async (req = request, res = response) => {
     try {
+        const { offset = 0, limit = 100 } = req.query;
+        const queryStatus = { status: true };
+
+        const [totalAddresses, addresses] = await Promise.all([
+            Address.countDocuments(queryStatus),
+            Address.find(queryStatus)
+                .populate('user', 'name')
+                .skip(Number(offset))
+                .limit(Number(limit))
+        ]);
 
         res.json({
-            message: 'Get Address'
+            totalAddresses,
+            addresses
         });
     } catch (error) {
         console.log('Error al consultar dirección: ', error)
@@ -56,9 +67,9 @@ const createAddress = async (req = request, res = response) => {
 const updateAddress = async (req = request, res = response) => {
     try {
         const { id } = req.params;
-        const { status, user, ...data} = req.body;
+        const { status, user, ...data } = req.body;
 
-        const address = await Address.findByIdAndUpdate(id, data, {new: true});
+        const address = await Address.findByIdAndUpdate(id, data, { new: true });
 
         res.json(address);
     } catch (error) {
@@ -73,7 +84,7 @@ const deleteAddress = async (req = request, res = response) => {
     try {
         const { id } = req.params;
 
-        const address = await Address.findByIdAndUpdate(id, {status: false}, {new: true});
+        const address = await Address.findByIdAndUpdate(id, { status: false }, { new: true });
 
         res.json(address);
     } catch (error) {

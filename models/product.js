@@ -49,7 +49,7 @@ const ProductSchema = Schema({
         type: [String],
         default: []
     }
-});
+}, { timestamps: true });
 
 ProductSchema.methods.toJSON = function () {
     const { __v, status, price, ...data } = this.toObject();

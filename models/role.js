@@ -6,6 +6,6 @@ const RoleSchema = Schema({
         type: String,
         required: [true, 'El rol es obligatorio.']
     }
-});
+}, { timestamps: true });
 
 module.exports = model('Role', RoleSchema);

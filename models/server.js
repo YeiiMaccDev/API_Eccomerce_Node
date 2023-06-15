@@ -12,9 +12,10 @@ class Server {
         this.port = process.env.PORT || 8080;
 
         this.paths = {
-            address: '/api/address',
+            addresses: '/api/addresses',
             auth: '/api/auth',
             categories: '/api/categories',
+            coupons: '/api/coupons',
             orders: '/api/orders',
             orderDetails: '/api/orderDetails',
             products: '/api/products',
@@ -58,9 +59,10 @@ class Server {
 
 
     routes() {
-        this.app.use(this.paths.address, require('../routes/address'))
+        this.app.use(this.paths.addresses, require('../routes/address'))
         this.app.use(this.paths.auth, require('../routes/auth'))
         this.app.use(this.paths.categories, require('../routes/category'))
+        this.app.use(this.paths.coupons, require('../routes/coupon'))
         this.app.use(this.paths.orders, require('../routes/order'))
         this.app.use(this.paths.orderDetails, require('../routes/orderDetail'))
         this.app.use(this.paths.products, require('../routes/product'))
