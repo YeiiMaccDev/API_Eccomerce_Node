@@ -28,7 +28,6 @@ router.get('/:id', [
 router.post('/', [
     validateJWT,
     isAdminRole,
-    check('code', 'El código es obligatorio.').not().isEmpty(),
     check('discount', 'El descuento es obligatorio.').not().isEmpty(),
     check('expirationDate', 'La fecha de expiración del cupón es obligatoria.').not().isEmpty(),
     check('maxUses', 'El número máximo de usos es obligatorio.').not().isEmpty(),
@@ -42,7 +41,6 @@ router.put('/:id', [
     validateFields,
     check('id').custom(existsCouponById),
     validateFields,
-    check('code', 'El código es obligatorio.').optional().not().isEmpty(),
     check('discount', 'El descuento es obligatorio.').optional().not().isEmpty(),
     check('expirationDate', 'La fecha de expiración del cupón es obligatoria.').optional().not().isEmpty(),
     check('maxUses', 'El número máximo de usos es obligatorio.').optional().not().isEmpty(),

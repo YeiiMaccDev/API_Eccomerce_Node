@@ -1,4 +1,6 @@
 const { request, response } = require("express");
+const { v4: uuidv4 } = require('uuid');
+
 const { Coupon } = require("../models");
 
 
@@ -45,9 +47,12 @@ const getCouponById = async (req = request, res = response) => {
 
 const createCoupon = async (req = request, res = response) => {
     try {
-        const { status, user, ...body } = req.body;
+        const { status, code, user, ...body } = req.body;
+
+        const codeCoupon = 'CP-' + uuidv4();
 
         const data = {
+            code: codeCoupon,
             user: req.authenticatedUser._id,
             ...body,
         };
