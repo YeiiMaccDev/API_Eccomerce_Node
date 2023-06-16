@@ -10,8 +10,8 @@ const getOrders = async (req = request, res = response) => {
     const [totalOrders, orders] = await Promise.all([
         Order.countDocuments(queryStatus),
         Order.find(queryStatus)
-            .populate('user', 'name')
-            // .populate('address', 'name')
+            .populate('customer', 'name')
+            .populate('address', 'address')
             .skip(Number(offset))
             .limit(Number(limit))
     ]);
@@ -27,7 +27,8 @@ const getOrdersById = async (req = request, res = response) => {
     
     const [order, details] = await Promise.all([
         Order.find({_id: id, status: true})
-            .populate('customer', 'name'),
+        .populate('customer', 'name')
+        .populate('address', 'address'),
         OrderDetail.find({order: id, status: true})
             .populate('product', 'name')
     ]);
@@ -35,8 +36,9 @@ const getOrdersById = async (req = request, res = response) => {
 }
 
 const createOrder = async (req = request, res = response) => {
+    const { address } = req.body;
     const customer = req.authenticatedUser._id;
-    const order = new Order({ customer });
+    const order = new Order({ address, customer });
 
     await order.save();
     

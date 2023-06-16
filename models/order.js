@@ -7,10 +7,9 @@ const OrderSchema = Schema({
         required: true
     },
     address: {
-        type: String
-        // type: Schema.Types.ObjectId,
-        // ref: 'Address',
-        // required: true
+        type: Schema.Types.ObjectId,
+        ref: 'Address',
+        required: true
     },
     payment: {
         type: String

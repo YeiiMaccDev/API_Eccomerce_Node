@@ -13,7 +13,8 @@ const {
 const {
     existsOrderById,
     existsUserById,
-    isArrayOfObject
+    isArrayOfObject,
+    existsAddressById
 } = require("../helpers");
 
 const {
@@ -46,6 +47,9 @@ router.get('/:id', [
 
 router.post('/', [
     validateJWT,
+    check('address', 'Dirección no es un ID válido.').isMongoId(),
+    validateFields,
+    check('address').custom(existsAddressById),
     check('products', 'Lista de productos es obligatoria.').not().isEmpty(),
     validateFields,
     check('products', 'Lista de productos debe ser un array de objetos de producto.').isArray(),
@@ -69,7 +73,7 @@ router.put('/:id', [
     validateFields,
     check('address', 'Dirección no es un ID válido.').optional().isMongoId(),
     validateFields,
-    // check('address').optional().custom(existsAddressById),
+    check('address').optional().custom(existsAddressById),
     validateFields,
     check('payment', 'Pago no es un ID válido.').optional().isMongoId(),
     // validateFields,

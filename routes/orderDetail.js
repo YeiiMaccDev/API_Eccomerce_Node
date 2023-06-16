@@ -20,7 +20,7 @@ const { getOrderDetailsByIdOrder, updateOrderDetail, deleteOrderDetail } = requi
 const router = Router();
 
 /**
- * {{url}}/api/orderDetails
+ * {{url}}/api/order-details
  */
 
 router.get('/:idOrder', [

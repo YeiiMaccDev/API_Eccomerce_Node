@@ -60,10 +60,12 @@ const createOrderDetail = async (req = request, res = response) => {
             Order.findByIdAndUpdate({ _id: idOrder }, { total: totalOrder }, { new: true })
         ]);
 
-        const order = await Order.findOne({ _id: idOrder }).populate('customer', 'name');
+        const order = await Order.findOne({ _id: idOrder })
+            .populate('address', 'address')
+            .populate('customer', 'name');
 
         return res.json({
-            message: `Detalle pedido.`,
+            message: `Detalle pedido...`,
             order,
             details
         });

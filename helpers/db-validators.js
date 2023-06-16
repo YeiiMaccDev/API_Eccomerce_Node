@@ -55,7 +55,7 @@ const existsOrderById = async (id = '') => {
     const existsOrder = await Order.findById(id);
 
     if (!existsOrder) {
-        throw new Error(`El id ' ${id} ' no está registrado.`);
+        throw new Error(`El pedido con id ' ${id} ' no está registrado.`);
     }
 }
 
@@ -63,7 +63,7 @@ const existsAddressById = async (id = '') => {
     const existsAddress = await Address.findById(id);
 
     if (!existsAddress) {
-        throw new Error(`El id ' ${id} ' no está registrado.`);
+        throw new Error(`El dirección con id ' ${id} ' no está registrado.`);
     }
 }
 
@@ -71,7 +71,7 @@ const existsCouponById = async (id = '') => {
     const existsCoupon = await Coupon.findById(id);
 
     if (!existsCoupon) {
-        throw new Error(`El id ' ${id} ' no está registrado.`);
+        throw new Error(`El cupón coon id ' ${id} ' no está registrado.`);
     }
 }
 
@@ -79,7 +79,7 @@ const existsGiftCardById = async (id = '') => {
     const existsGiftCard = await GiftCard.findById(id);
 
     if (!existsGiftCard) {
-        throw new Error(`El id ' ${id} ' no está registrado.`);
+        throw new Error(`La tarjeta regalo con id ' ${id} ' no está registrado.`);
     }
 }
 
