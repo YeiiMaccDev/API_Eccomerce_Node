@@ -16,8 +16,9 @@ class Server {
             auth: '/api/auth',
             categories: '/api/categories',
             coupons: '/api/coupons',
+            giftCards: '/api/gift-cards',
             orders: '/api/orders',
-            orderDetails: '/api/orderDetails',
+            orderDetails: '/api/order-details',
             products: '/api/products',
             search: '/api/search',
             users: '/api/users',
@@ -63,6 +64,7 @@ class Server {
         this.app.use(this.paths.auth, require('../routes/auth'))
         this.app.use(this.paths.categories, require('../routes/category'))
         this.app.use(this.paths.coupons, require('../routes/coupon'))
+        this.app.use(this.paths.giftCards, require('../routes/giftCard'))
         this.app.use(this.paths.orders, require('../routes/order'))
         this.app.use(this.paths.orderDetails, require('../routes/orderDetail'))
         this.app.use(this.paths.products, require('../routes/product'))

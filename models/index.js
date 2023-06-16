@@ -2,6 +2,7 @@
 const Address = require('./address');
 const Category = require('./category');
 const Coupon= require('./coupon');
+const GiftCard= require('./giftCard');
 const Product = require('./product');
 const Order = require('./order');
 const OrderDetail = require('./orderDetail');
@@ -14,6 +15,7 @@ module.exports = {
     Address,
     Category,
     Coupon,
+    GiftCard,
     Order,
     OrderDetail,
     Product,

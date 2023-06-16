@@ -4,6 +4,7 @@ const CouponSchema = Schema({
     code: {
         type: String,
         require: [true, 'El código es obligatorio.'],
+        unique: true 
     },
     discount: {
         type: Number,
@@ -30,8 +31,7 @@ const CouponSchema = Schema({
     },
     status: {
         type: Boolean,
-        default: true,
-        required: true
+        default: true
     }
 }, { timestamps: true });
 

@@ -5,7 +5,8 @@ const {
     User,
     Order,
     Address,
-    Coupon
+    Coupon,
+    GiftCard
 } = require('../models');
 
 const isValidRole = async (role = '') => {
@@ -74,6 +75,14 @@ const existsCouponById = async (id = '') => {
     }
 }
 
+const existsGiftCardById = async (id = '') => {
+    const existsGiftCard = await GiftCard.findById(id);
+
+    if (!existsGiftCard) {
+        throw new Error(`El id ' ${id} ' no está registrado.`);
+    }
+}
+
 /**
  * Validate authorized collections.
  */
@@ -103,6 +112,7 @@ module.exports = {
     existsEmail,
     existsCategoryById,
     existsCouponById,
+    existsGiftCardById,
     existsProductById,
     existsUserById,
     existsOrderById,

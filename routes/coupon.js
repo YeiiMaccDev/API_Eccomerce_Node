@@ -2,7 +2,7 @@ const { Router } = require("express");
 const { check } = require("express-validator");
 
 const { validateJWT, isAdminRole, validateFields } = require("../middlewares");
-const { existsAddressById, existsCouponById } = require("../helpers");
+const {  existsCouponById } = require("../helpers");
 const { getCoupons, getCouponById, createCoupon, updateCoupon, deleteCoupon } = require("../controllers/coupon");
 
 const router = Router();

@@ -22,6 +22,10 @@ const UserSchema = Schema({
         required: true,
         enum: ['ADMIN_ROLE', 'USER_ROLE', 'SALES_ROLE']
     },
+    walletBalance: {
+        type: Schema.Types.Decimal128,
+        default: 0
+    },
     status: {
         type: Boolean,
         default: true
@@ -34,9 +38,12 @@ const UserSchema = Schema({
 }, { timestamps: true });
 
 UserSchema.methods.toJSON = function () {
-    const { __v, status, password, _id, ...user } = this.toObject();
-    user.uid = _id;
-    return user;
+    const { __v, status, password, walletBalance, _id, ...data } = this.toObject();
+    data.uid = _id;
+    return {
+        walletBalance: (walletBalance) ? parseFloat(walletBalance) : 0,
+        ...data,
+    };
 }
 
 module.exports = model('User', UserSchema);
