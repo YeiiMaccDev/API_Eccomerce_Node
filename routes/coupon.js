@@ -1,9 +1,25 @@
 const { Router } = require("express");
 const { check } = require("express-validator");
 
-const { validateJWT, isAdminRole, validateFields } = require("../middlewares");
-const {  existsCouponById } = require("../helpers");
-const { getCoupons, getCouponById, createCoupon, updateCoupon, deleteCoupon } = require("../controllers/coupon");
+const { 
+    validateJWT, 
+    isAdminRole, 
+    validateFields 
+} = require("../middlewares");
+
+const {  
+    existsCouponById, 
+    existsOrderById 
+} = require("../helpers");
+
+const { 
+    getCoupons, 
+    getCouponById, 
+    createCoupon, 
+    updateCoupon, 
+    deleteCoupon, 
+    redeemCoupon 
+} = require("../controllers/coupon");
 
 const router = Router();
 
@@ -56,6 +72,14 @@ router.delete('/:id', [
     validateFields
 ], deleteCoupon);
 
-
+router.post('/redeem', [
+    validateJWT,
+    check('code', 'El código del cupón es obligatorio.').not().isEmpty(),
+    validateFields,
+    check('order', 'No es un ID válido.').isMongoId(),
+    validateFields,
+    check('order').custom(existsOrderById),
+    validateFields,
+], redeemCoupon);
 
 module.exports = router;

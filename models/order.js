@@ -17,6 +17,14 @@ const OrderSchema = Schema({
         // ref: 'Payment',
         // required: true
     },
+    coupon: {
+        type: Schema.Types.ObjectId,
+        ref: 'Coupon'
+    },
+    couponDiscount: {
+        type: Number,
+        default: 0
+    },
     date: {
         type: Date,
         default: Date.now
@@ -25,6 +33,14 @@ const OrderSchema = Schema({
         type: String,
         enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
         default: 'pending'
+    },
+    totalWithoutCoupon: {
+        type: Schema.Types.Decimal128,
+        default: 0
+    },
+    totalCouponDiscount: {
+        type: Schema.Types.Decimal128,
+        default: 0
     },
     total: {
         type: Schema.Types.Decimal128,
@@ -38,12 +54,14 @@ const OrderSchema = Schema({
 }, { timestamps: true });
 
 OrderSchema.methods.toJSON = function () {
-    const { __v, status, total, ...data } = this.toObject();
+    const { __v, status, total, totalCouponDiscount, totalWithoutCoupon, ...data } = this.toObject();
+    const totalOrder = (total && total > 0) ? parseFloat(total) : (totalWithoutCoupon) ? parseFloat(totalWithoutCoupon) : 0;
     return {
-        total: (total) ? parseFloat(total) : 0,
+        total: totalOrder,
+        totalCouponDiscount: (totalCouponDiscount) ? parseFloat(totalCouponDiscount) : 0,
+        totalWithoutCoupon: (totalWithoutCoupon) ? parseFloat(totalWithoutCoupon) : 0,
         ...data
     };
 }
-
 
 module.exports = model('Order', OrderSchema);

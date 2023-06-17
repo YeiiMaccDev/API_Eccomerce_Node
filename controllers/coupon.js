@@ -1,7 +1,8 @@
 const { request, response } = require("express");
 const { v4: uuidv4 } = require('uuid');
 
-const { Coupon } = require("../models");
+const { Coupon, Order } = require("../models");
+const coupon = require("../models/coupon");
 
 
 const getCoupons = async (req = request, res = response) => {
@@ -100,10 +101,120 @@ const deleteCoupon = async (req = request, res = response) => {
     }
 }
 
+// Redeem the coupon by assigning it to the order and calculating the new total with the discount.
+const redeemCoupon = async (req = request, res = response) => {
+    try {
+        const { code, order } = req.body;
+        const userId = req.authenticatedUser._id;
+
+        const [orderDB, couponDB] = await Promise.all([
+            Order.findById(order),
+            Coupon.findOne({code})
+        ]);
+
+        if (!orderDB || !orderDB.status) {
+            return res.status(400).json({ message: `El pedido no existe o no está disponible.` });
+        }
+
+        if (orderDB.coupon) {
+            return res.status(400).json({ message: `El pedido ya tiene un cupón asignado.` });
+        }
+
+
+        if (!couponDB || !couponDB.status) {
+            return res.status(400).json({ message: `No existe cupón con el código: ${code}` });
+        }
+
+        if (couponDB.uses >= couponDB.maxUses) {
+            return res.status(400).json({
+                message: `Se ha superado el número máximo de usos del cupón.`
+            });
+        }
+
+        if (!couponDB.isActive) {
+            return res.status(400).json({ message: `El cupón no está activo.` });
+        }
+
+        const currentDate = new Date();
+        if (couponDB.expirationDate <= currentDate) {
+            return res.status(400).json({ message: `El cupón ha expirado.` });
+        }
+
+
+        const totalDiscount = parseFloat(orderDB.totalWithoutCoupon) * ((parseFloat(couponDB.discount) / 100));
+        const totalOrder = parseFloat(orderDB.totalWithoutCoupon) - totalDiscount;
+
+        const dataOrder = {
+            coupon: couponDB._id,
+            couponDiscount: couponDB.discount,
+            totalCouponDiscount: totalDiscount,
+            total: totalOrder
+        };
+
+        const dataCoupon = {
+            $push: { redeemedBy: userId },
+            uses: (parseInt(couponDB.uses) + 1)
+        };
+
+        const [orderUpdated, coupon] = await Promise.all([
+            Order.findByIdAndUpdate(orderDB._id, dataOrder, { new: true }),
+            Coupon.findByIdAndUpdate(orderDB._id, dataCoupon, { new: true })
+        ]);
+
+        return res.json(orderUpdated);
+
+    } catch (error) {
+        console.log('Error al canjear el cupón: ', error)
+        res.status(500).json({
+            message: 'Error al canjear el cupón.'
+        });
+    }
+}
+
+// Updates the order total when a coupon has already been assigned and the order details are updated.
+const updateTotalOrderWithCoupon = async (req = request, res = response) => {
+    try {
+        const { idOrder, idCoupon } = req.body;
+
+        const [orderDB, couponDB] = await Promise.all([
+            Order.findById(idOrder),
+            Coupon.findById(idCoupon)
+        ]);
+        
+
+        if (!orderDB || !orderDB.status) {
+            return res.status(400).json({ message: `El pedido no existe o no está disponible.` });
+        }
+  
+        if (!couponDB || !couponDB.status) {
+            return res.status(400).json({ message: `El cupón no existe o no está disponible.` });
+        }
+
+        const totalDiscount = parseFloat(orderDB.totalWithoutCoupon) * ((parseFloat(couponDB.discount) / 100));
+        const totalOrder = parseFloat(orderDB.totalWithoutCoupon) - totalDiscount;
+
+        const dataOrder = {
+            couponDiscount: couponDB.discount,
+            totalCouponDiscount: totalDiscount,
+            total: totalOrder
+        };
+
+        return await Order.findByIdAndUpdate(orderDB._id, dataOrder, { new: true });
+
+    } catch (error) {
+        console.log('Error al canjear el cupón: ', error)
+        res.status(500).json({
+            message: 'Error al canjear el cupón.'
+        });
+    }
+}
+
 module.exports = {
     getCoupons,
     getCouponById,
     createCoupon,
     updateCoupon,
-    deleteCoupon
+    deleteCoupon,
+    redeemCoupon,
+    updateTotalOrderWithCoupon
 }

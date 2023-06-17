@@ -24,6 +24,14 @@ const CouponSchema = Schema({
         require: [true, 'El número máximo de usos es obligatorio.'],
         default: 1
     },
+    redeemedBy: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    isActive: {
+        type: Boolean,
+        default: true
+    },
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',

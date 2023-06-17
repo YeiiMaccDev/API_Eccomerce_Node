@@ -1,20 +1,10 @@
 const { request, response } = require("express");
 const { Order, Product, OrderDetail } = require("../models");
-const { calculatePriceTotal } = require("../helpers");
-
-const calculateTotalOrder = async (idOrder) => {
-    try {
-        const orderDetails = await OrderDetail.find({ order: idOrder, status: true });
-        return orderDetails.reduce((total, product) => {
-            return total + calculatePriceTotal(product.price, product.quantity, product.quantity)
-        }, 0);
-    } catch (error) {
-        console.log('Error al calcular total del pedido: ', error)
-        return res.status(500).json({
-            message: 'Se ha producido un error al crear el pedido.'
-        });
-    }
-}
+const { 
+    calculatePriceTotal, 
+    calculateTotalOrderWithoutCoupon 
+} = require("../helpers");
+const { updateTotalOrderWithCoupon } = require("./coupon");
 
 const getOrderDetailsByIdOrder = async (req = request, res = response) => {
     try {
@@ -55,9 +45,9 @@ const createOrderDetail = async (req = request, res = response) => {
             totalOrder += total;
         });
 
-        await Promise.all([
+        const [orderDetailsUpdated, orderUpdated] = await Promise.all([
             OrderDetail.insertMany(details),
-            Order.findByIdAndUpdate({ _id: idOrder }, { total: totalOrder }, { new: true })
+            Order.findByIdAndUpdate({ _id: idOrder }, { totalWithoutCoupon: totalOrder }, { new: true })
         ]);
 
         const order = await Order.findOne({ _id: idOrder })
@@ -97,11 +87,11 @@ const updateOrderDetail = async (req = request, res = response) => {
         }
 
         const promises = products.map(async (newProduct) => {
-            const detailDB = orderDetailsDB.find((detail) => detail.product.toString() === newProduct.id);
             const productDB = productsDB.find((product) => product._id.toString() === newProduct.id);
+            const detailDB = orderDetailsDB.find((detail) => detail.product.toString() === newProduct.id);
             if (detailDB) {
                 const totalDetails = calculatePriceTotal(productDB.price, newProduct.quantity, productDB.discount);
-                await OrderDetail.findByIdAndUpdate(detailDB._id, { quantity: newProduct.quantity, total: totalDetails }, { new: true });
+                return await OrderDetail.findByIdAndUpdate(detailDB._id, { price: productDB.price, quantity: newProduct.quantity, total: totalDetails }, { new: true });
             } else {
                 const total = calculatePriceTotal(productDB.price, newProduct.quantity, productDB.discount);
 
@@ -113,17 +103,24 @@ const updateOrderDetail = async (req = request, res = response) => {
                     discount: productDB.discount,
                     total,
                 });
-                await newDetail.save();
+                return await newDetail.save();
             }
         });
 
         await Promise.all(promises);
 
-        const totalOrder = await calculateTotalOrder(idOrder);
-        const order = await Order.findByIdAndUpdate(idOrder, { total: totalOrder }, { new: true });
+        const totalOrder = await calculateTotalOrderWithoutCoupon(idOrder);
+        let order = await Order.findByIdAndUpdate(idOrder, { totalWithoutCoupon: totalOrder }, { new: true });
+
+        // Update the order total by applying the redeemed coupon.
+        if(order.coupon) {
+            req.body.idOrder = idOrder;
+            req.body.idCoupon = order.coupon;
+            order = await updateTotalOrderWithCoupon(req, res);
+        }
 
         return res.json({
-            message: 'Pedido actualizado con exito.',
+            message: 'Pedido actualizado con exito..',
             order
         });
     } catch (error) {
@@ -152,7 +149,7 @@ const deleteOrderDetail = async (req = request, res = response) => {
             return await OrderDetail.findByIdAndUpdate(detail.id, { status: false }, { new: true });
         }));
 
-        const totalOrder = await calculateTotalOrder(idOrder);
+        const totalOrder = await calculateTotalOrderWithoutCoupon(idOrder);
         const order = await Order.findByIdAndUpdate(idOrder, { total: totalOrder }, { new: true });
 
         return res.json({
