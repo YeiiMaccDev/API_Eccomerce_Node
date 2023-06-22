@@ -7,57 +7,45 @@ const {
     validateJWT,
     validateOrderDetails,
     validateProductData,
-    validateDuplicateProducts
+    validateDuplicateProducts,
+    conditionalValidationJWT
 } = require("../middlewares");
 
 const {
-    existsOrderById,
-    existsUserById,
     isArrayOfObject,
-    existsAddressById
+    existsShoppingCartById
 } = require("../helpers");
+const { getShoppingCarts, getShoppingCartById, createShoppingCart, updateShoppingCart, deleteShoppingCart } = require("../controllers/shoppingCart");
 
-const {
-    getOrders,
-    getOrdersById,
-    createOrder,
-    updateOrder,
-    deleteOrder
-} = require("../controllers/order");
 
 const router = Router();
 
 /**
- * {{url}}/api/orders
+ * {{url}}/api/shopping-cart
  */
 
 router.get('/', [
     validateJWT,
     isAdminRole,
     validateFields
-], getOrders);
+], getShoppingCarts);
 
 router.get('/:id', [
     validateJWT,
     check('id', 'No es un ID válido.').isMongoId(),
     validateFields,
-    check('id').custom(existsOrderById),
+    check('id').custom(existsShoppingCartById),
     validateFields
-], getOrdersById);
+], getShoppingCartById);
 
 router.post('/', [
-    validateJWT,
-    check('address', 'La dirección es obligatoria.').not().isEmpty(),
-    validateFields,
-    check('address', 'Dirección no es un ID válido.').isMongoId(),
-    validateFields,
-    check('address').custom(existsAddressById),
+    conditionalValidationJWT,
     check('products', 'Lista de productos es obligatoria.').not().isEmpty(),
     validateFields,
     check('products', 'Lista de productos debe ser un array de objetos de producto.').isArray(),
     check('products', 'Lista de productos debe contener al menos un producto.').isArray({ min: 1 }),
     validateFields,
-    check('products').custom(productsOrder => isArrayOfObject(productsOrder)),
+    check('products').custom(productsShoppingCart => isArrayOfObject(productsShoppingCart)),
     validateFields,
     validateDuplicateProducts,
     validateFields,
@@ -65,32 +53,23 @@ router.post('/', [
     validateFields,
     validateOrderDetails,
     validateFields
-], createOrder);
+], createShoppingCart );
 
 router.put('/:id', [
     validateJWT,
     check('id', 'No es un ID válido.').isMongoId(),
     validateFields,
-    check('id').custom(existsOrderById),
-    validateFields,
-    check('address', 'Dirección no es un ID válido.').optional().isMongoId(),
-    validateFields,
-    check('address').optional().custom(existsAddressById),
-    validateFields,
-    check('payment', 'Pago no es un ID válido.').optional().isMongoId(),
-    // validateFields,
-    // check('payment').optional().custom(existsPaymentById),
+    check('id').custom(existsShoppingCartById),
     validateFields
-], updateOrder);
-
+], updateShoppingCart);
 
 router.delete('/:id', [
     validateJWT,
     isAdminRole,
     check('id', 'No es un ID válido').isMongoId(),
     validateFields,
-    check('id').custom(existsOrderById),
+    check('id').custom(existsShoppingCartById),
     validateFields
-], deleteOrder);
+], deleteShoppingCart);
 
 module.exports = router;

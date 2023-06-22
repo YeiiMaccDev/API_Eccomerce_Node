@@ -9,7 +9,8 @@ const {
 
 const {  
     existsCouponById, 
-    existsOrderById 
+    existsOrderById, 
+    existsShoppingCartById
 } = require("../helpers");
 
 const { 
@@ -18,7 +19,8 @@ const {
     createCoupon, 
     updateCoupon, 
     deleteCoupon, 
-    redeemCoupon 
+    redeemCoupon, 
+    removeCoupon
 } = require("../controllers/coupon");
 
 const router = Router();
@@ -73,13 +75,22 @@ router.delete('/:id', [
 ], deleteCoupon);
 
 router.post('/redeem', [
-    validateJWT,
     check('code', 'El código del cupón es obligatorio.').not().isEmpty(),
     validateFields,
-    check('order', 'No es un ID válido.').isMongoId(),
+    check('idShoppingCart', 'El id del carrito de compras es obligatorio.').not().isEmpty(),
     validateFields,
-    check('order').custom(existsOrderById),
+    check('idShoppingCart', 'No es un ID válido.').isMongoId(),
+    validateFields,
+    check('idShoppingCart').custom(existsShoppingCartById),
     validateFields,
 ], redeemCoupon);
+
+
+router.delete('/remove/:idShoppingCart', [
+    check('idShoppingCart', 'No es un ID válido.').isMongoId(),
+    validateFields,
+    check('idShoppingCart').custom(existsShoppingCartById),
+    validateFields,
+], removeCoupon);
 
 module.exports = router;

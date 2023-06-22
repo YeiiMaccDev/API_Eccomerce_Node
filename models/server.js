@@ -21,6 +21,8 @@ class Server {
             orderDetails: '/api/order-details',
             products: '/api/products',
             search: '/api/search',
+            shoppingCart: '/api/shopping-cart',
+            shoppingCartDetails: '/api/shopping-cart-details',
             users: '/api/users',
             uploads: '/api/uploads'
         }
@@ -69,6 +71,8 @@ class Server {
         this.app.use(this.paths.orderDetails, require('../routes/orderDetail'))
         this.app.use(this.paths.products, require('../routes/product'))
         this.app.use(this.paths.search, require('../routes/search'))
+        this.app.use(this.paths.shoppingCart, require('../routes/shoppingCart'))
+        this.app.use(this.paths.shoppingCartDetails, require('../routes/shoppingCartDetail'))
         this.app.use(this.paths.users, require('../routes/user'))
         this.app.use(this.paths.uploads, require('../routes/upload'))
     }

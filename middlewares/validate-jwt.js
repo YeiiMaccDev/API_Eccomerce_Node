@@ -46,6 +46,15 @@ const validateJWT = async(req = request, res = response, next) => {
 
 }
 
+
+const conditionalValidationJWT = async(req = request, res = response, next) => {
+    if (req.query.skipJWTValidation) {
+        return next();
+    }
+    await validateJWT(req, res, next); 
+}
+
 module.exports = {
-    validateJWT
+    validateJWT,
+    conditionalValidationJWT
 }

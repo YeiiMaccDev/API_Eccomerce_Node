@@ -1,5 +1,5 @@
 const { request, response } = require("express");
-const { Order, Product, OrderDetail } = require("../models");
+const { Order, Product, OrderDetail, ShoppingCartDetail } = require("../models");
 const { isValidObjectId } = require("mongoose");
 
 /**
@@ -145,6 +145,37 @@ const validateProductExistInOrder = async (req = request, res = response, next) 
   }
 }
 
+/**
+ * Validate that the products sent to be removed from the shopping cart exist.
+ */
+const validateProductExistInShoppingCart = async (req = request, res = response, next) => {
+  try {
+    const { idShoppingCart } = req.params;
+    const { details } = req.body;
+
+    const ids = details.map(detail => detail.id);
+    const orderDetails = await ShoppingCartDetail.find({ shoppingCart: idShoppingCart, _id: { $in: ids } });
+    const errors = [];
+
+    details.forEach(detail => {
+      const detailExist = orderDetails.find(detailDB => detailDB._id.toString() === detail.id);
+
+      if (!detailExist) {
+        errors.push({ error: `Detalle de pedido no encontrado en el carrito de compra, Id: ${detail.id}` });
+      }
+    });
+
+    if (errors.length > 0) {
+      return res.status(400).json(errors);
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al validar los detalles del pedido.' });
+  }
+}
+
 
 
 module.exports = {
@@ -152,5 +183,6 @@ module.exports = {
   validateDuplicateProducts,
   validateOrderDetails,
   validateProductData,
-  validateProductExistInOrder
+  validateProductExistInOrder,
+  validateProductExistInShoppingCart
 }

@@ -1,8 +1,7 @@
 const { request, response } = require("express");
 const { v4: uuidv4 } = require('uuid');
 
-const { Coupon, Order } = require("../models");
-const coupon = require("../models/coupon");
+const { Coupon, Order, ShoppingCart } = require("../models");
 
 
 const getCoupons = async (req = request, res = response) => {
@@ -101,14 +100,124 @@ const deleteCoupon = async (req = request, res = response) => {
     }
 }
 
-// Redeem the coupon by assigning it to the order and calculating the new total with the discount.
+
+/**
+ * This function redeems a coupon for a shopping cart and updates the cart's total with the discount.
+ * @param [req] - The request object, which contains information about the incoming HTTP request.
+ * Include the `code` of the coupon and `IdShoppingCart` inside `req.body` for execution.
+ * @param [res] - The `res` parameter is the response object that will be sent back to the client with
+ * the result of the API call.
+ * @returns a JSON response with the updated shopping cart object after applying a coupon discount. If
+ * there is an error, it returns a JSON response with an error message and a 500 status code.
+ */
 const redeemCoupon = async (req = request, res = response) => {
     try {
-        const { code, order } = req.body;
+        const { code, idShoppingCart } = req.body;
+
+        const [shoppingCartDB, couponDB] = await Promise.all([
+            ShoppingCart.findById(idShoppingCart),
+            Coupon.findOne({code})
+        ]);
+
+        if (!shoppingCartDB || !shoppingCartDB.status) {
+            return res.status(400).json({ message: `El carrito de compras no existe o no está disponible.` });
+        }
+
+        // if (shoppingCartDB.coupon) {
+        //     return res.status(400).json({ message: `El carrito de compras ya tiene un cupón asignado.` });
+        // }
+
+
+        if (!couponDB || !couponDB.status) {
+            return res.status(400).json({ message: `No existe cupón con el código: ${code}` });
+        }
+
+        if (couponDB.uses >= couponDB.maxUses) {
+            return res.status(400).json({
+                message: `Se ha superado el número máximo de usos del cupón.`
+            });
+        }
+
+        if (!couponDB.isActive) {
+            return res.status(400).json({ message: `El cupón no está activo.` });
+        }
+
+        const currentDate = new Date();
+        if (couponDB.expirationDate <= currentDate) {
+            return res.status(400).json({ message: `El cupón ha expirado.` });
+        }
+
+        const totalDiscount = parseFloat(shoppingCartDB.totalWithoutCoupon) * ((parseFloat(couponDB.discount) / 100));
+        const totalShoppingCart = parseFloat(shoppingCartDB.totalWithoutCoupon) - totalDiscount;
+
+        const dataShoppingCart = {
+            coupon: couponDB._id,
+            couponDiscount: couponDB.discount,
+            totalCouponDiscount: totalDiscount,
+            total: totalShoppingCart
+        };
+
+        const shoppingCart = await  ShoppingCart.findByIdAndUpdate(shoppingCartDB._id, dataShoppingCart, { new: true });
+
+        return res.json(shoppingCart);
+
+    } catch (error) {
+        console.log('Error al canjear el cupón: ', error)
+        res.status(500).json({
+            message: 'Error al canjear el cupón.'
+        });
+    }
+}
+
+/**
+ * This function removes a coupon from a shopping cart and updates the cart's total.
+ * @param [req] - The request object, which contains information about the incoming HTTP request.
+ * Include `IdShoppingCart` inside `req.params` for execution.
+ * @param [res] - The `res` parameter is the response object that will be sent back to the client with
+ * the response data. It is an instance of the `response` object from the Express.js framework.
+ * @returns a JSON response with the updated shopping cart object after removing the coupon.
+ */
+const removeCoupon = async (req = request, res = response) => {
+    try {
+        const { idShoppingCart } = req.params;
+
+        const shoppingCartDB = await ShoppingCart.findById(idShoppingCart);
+
+        const dataShoppingCart = {
+            coupon: null,
+            couponDiscount: 0,
+            totalCouponDiscount: 0,
+            total: shoppingCartDB.totalWithoutCoupon
+        };
+
+        const shoppingCart = await  ShoppingCart.findByIdAndUpdate(shoppingCartDB._id, dataShoppingCart, { new: true });
+
+        return res.json(shoppingCart);
+
+    } catch (error) {
+        console.log('Error al remover el cupón: ', error)
+        res.status(500).json({
+            message: 'Error al remover el cupón.'
+        });
+    }
+}
+
+
+/**
+ * This function redeems a coupon on an order, updates the total with the discount and updates the coupon usage data.
+ * @param [req] - The request object, which contains information about the incoming HTTP request.
+ * Include the `code` of the coupon and `IdOrder` inside `req.body` for execution.
+ * @param [res] - The `res` parameter is the response object that will be sent back to the client with
+ * the result of the API call.
+ * @returns a JSON response with the updated order data.
+ */
+const redeemCouponOnOrder = async (req = request, res = response) => {
+    try {
+        const { code, idOrder } = req.body;
         const userId = req.authenticatedUser._id;
 
         const [orderDB, couponDB] = await Promise.all([
-            Order.findById(order),
+            Order.findById(idOrder),
             Coupon.findOne({code})
         ]);
 
@@ -156,12 +265,15 @@ const redeemCoupon = async (req = request, res = response) => {
             uses: (parseInt(couponDB.uses) + 1)
         };
 
-        const [orderUpdated, coupon] = await Promise.all([
+        const [order, coupon] = await Promise.all([
             Order.findByIdAndUpdate(orderDB._id, dataOrder, { new: true }),
-            Coupon.findByIdAndUpdate(orderDB._id, dataCoupon, { new: true })
+            Coupon.findByIdAndUpdate(couponDB._id, dataCoupon, { new: true })
         ]);
 
-        return res.json(orderUpdated);
+        return res.json({
+            order, 
+            coupon
+        });
 
     } catch (error) {
         console.log('Error al canjear el cupón: ', error)
@@ -171,7 +283,45 @@ const redeemCoupon = async (req = request, res = response) => {
     }
 }
 
+
 // Updates the order total when a coupon has already been assigned and the order details are updated.
+const updateTotalShoppingCartWithCoupon = async (req = request, res = response) => {
+    try {
+        const { idShoppingCart, idCoupon } = req.body;
+
+        const [shoppingCartDB, couponDB] = await Promise.all([
+            ShoppingCart.findById(idShoppingCart),
+            Coupon.findById(idCoupon)
+        ]);
+        
+
+        if (!shoppingCartDB || !shoppingCartDB.status) {
+            return res.status(400).json({ message: `El pedido no existe o no está disponible.` });
+        }
+  
+        if (!couponDB || !couponDB.status) {
+            return res.status(400).json({ message: `El cupón no existe o no está disponible.` });
+        }
+
+        const totalDiscount = parseFloat(shoppingCartDB.totalWithoutCoupon) * ((parseFloat(couponDB.discount) / 100));
+        const totalShoppingCart = parseFloat(shoppingCartDB.totalWithoutCoupon) - totalDiscount;
+
+        const dataShoppingCart = {
+            couponDiscount: couponDB.discount,
+            totalCouponDiscount: totalDiscount,
+            total: totalShoppingCart
+        };
+
+        return await ShoppingCart.findByIdAndUpdate(shoppingCartDB._id, dataShoppingCart, { new: true });
+
+    } catch (error) {
+        console.log('Error al canjear el cupón: ', error)
+        res.status(500).json({
+            message: 'Error al canjear el cupón.'
+        });
+    }
+}
+
 const updateTotalOrderWithCoupon = async (req = request, res = response) => {
     try {
         const { idOrder, idCoupon } = req.body;
@@ -216,5 +366,8 @@ module.exports = {
     updateCoupon,
     deleteCoupon,
     redeemCoupon,
-    updateTotalOrderWithCoupon
+    removeCoupon,
+    redeemCouponOnOrder,
+    updateTotalOrderWithCoupon,
+    updateTotalShoppingCartWithCoupon
 }

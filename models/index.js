@@ -8,6 +8,8 @@ const Order = require('./order');
 const OrderDetail = require('./orderDetail');
 const Role = require('./role');
 const Server = require('./server');
+const ShoppingCart = require('./shoppingCart');
+const ShoppingCartDetail = require('./shoppingCartDetail');
 const User = require('./user');
 
 
@@ -21,5 +23,7 @@ module.exports = {
     Product,
     Role,
     Server,
+    ShoppingCart,
+    ShoppingCartDetail,
     User
 }

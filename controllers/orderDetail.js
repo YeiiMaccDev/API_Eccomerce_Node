@@ -4,7 +4,7 @@ const {
     calculatePriceTotal, 
     calculateTotalOrderWithoutCoupon 
 } = require("../helpers");
-const { updateTotalOrderWithCoupon } = require("./coupon");
+const { updateTotalOrderWithCoupon, redeemCouponOnOrder } = require("./coupon");
 
 const getOrderDetailsByIdOrder = async (req = request, res = response) => {
     try {
@@ -21,7 +21,7 @@ const getOrderDetailsByIdOrder = async (req = request, res = response) => {
 
 const createOrderDetail = async (req = request, res = response) => {
     try {
-        const { products, idOrder } = req.body;
+        const { products, idOrder, code } = req.body;
         let totalOrder = 0;
         const details = [];
 
@@ -50,12 +50,15 @@ const createOrderDetail = async (req = request, res = response) => {
             Order.findByIdAndUpdate({ _id: idOrder }, { totalWithoutCoupon: totalOrder }, { new: true })
         ]);
 
-        const order = await Order.findOne({ _id: idOrder })
-            .populate('address', 'address')
-            .populate('customer', 'name');
+       /* If the `code` coupon exists, the discount will be applied to the order total. */
+        if (code) {
+           return await redeemCouponOnOrder(req, res); 
+        } 
+
+        const order = await Order.findByIdAndUpdate({ _id: idOrder }, { total: totalOrder }, { new: true });
 
         return res.json({
-            message: `Detalle pedido...`,
+            message: `Detalle pedido.`,
             order,
             details
         });
@@ -117,6 +120,8 @@ const updateOrderDetail = async (req = request, res = response) => {
             req.body.idOrder = idOrder;
             req.body.idCoupon = order.coupon;
             order = await updateTotalOrderWithCoupon(req, res);
+        } else {
+            order = await Order.findByIdAndUpdate(idOrder, { total: totalOrder }, { new: true });
         }
 
         return res.json({
@@ -150,7 +155,16 @@ const deleteOrderDetail = async (req = request, res = response) => {
         }));
 
         const totalOrder = await calculateTotalOrderWithoutCoupon(idOrder);
-        const order = await Order.findByIdAndUpdate(idOrder, { total: totalOrder }, { new: true });
+        let order = await Order.findByIdAndUpdate(idOrder, { totalWithoutCoupon: totalOrder }, { new: true });
+
+        // Update the order total by applying the redeemed coupon.
+        if(order.coupon) {
+            req.body.idOrder = idOrder;
+            req.body.idCoupon = order.coupon;
+            order = await updateTotalOrderWithCoupon(req, res);
+        } else {
+            order = await Order.findByIdAndUpdate(idOrder, { total: totalOrder }, { new: true });
+        }
 
         return res.json({
             message: 'Items eliminados.',

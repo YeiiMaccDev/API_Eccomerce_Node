@@ -6,7 +6,8 @@ const {
     Order,
     Address,
     Coupon,
-    GiftCard
+    GiftCard,
+    ShoppingCart
 } = require('../models');
 
 const isValidRole = async (role = '') => {
@@ -56,6 +57,14 @@ const existsOrderById = async (id = '') => {
 
     if (!existsOrder) {
         throw new Error(`El pedido con id ' ${id} ' no está registrado.`);
+    }
+}
+
+const existsShoppingCartById = async (id = '') => {
+    const existsShoppingCart = await ShoppingCart.findById(id);
+
+    if (!existsShoppingCart) {
+        throw new Error(`El carrito de compras con id ' ${id} ' no está registrado.`);
     }
 }
 
@@ -116,6 +125,7 @@ module.exports = {
     existsProductById,
     existsUserById,
     existsOrderById,
+    existsShoppingCartById,
     iscollectionsAuthorized,
     isArrayOfObject
 }

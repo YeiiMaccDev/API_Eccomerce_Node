@@ -44,8 +44,6 @@ const createOrder = async (req = request, res = response) => {
     
     req.body.idOrder = order._id;
     return createOrderDetail(req, res);
-
-    return res.json(order);
 }
 
 const updateOrder = async (req = request, res = response) => {
@@ -54,6 +52,12 @@ const updateOrder = async (req = request, res = response) => {
 
     const statusOrderUpdate = ['pending', 'confirmed', 'processing']
     const orderTemp = await Order.findById(id);
+
+    if (orderTemp.orderStatus === 'cancelled') {
+        return res.status(400).json({
+            message: `El pedido ha sido cancelado.No puede modificarse.`
+        });
+    }    
 
     if (!statusOrderUpdate.includes(orderTemp.orderStatus)) {
         return res.status(400).json({
