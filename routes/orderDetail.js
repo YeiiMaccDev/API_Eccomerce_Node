@@ -14,7 +14,12 @@ const {
     existsOrderById,
     isArrayOfObject
 } = require("../helpers");
-const { getOrderDetailsByIdOrder, updateOrderDetail, deleteOrderDetail } = require("../controllers/orderDetail");
+
+const { 
+    getOrderDetailsByIdOrder, 
+    updateOrderDetail, 
+    deleteOrderDetail 
+} = require("../controllers/orderDetail");
 
 
 const router = Router();

@@ -1,4 +1,5 @@
 const { request, response } = require("express");
+
 const { ShoppingCartDetail, ShoppingCart } = require("../models");
 const { createShoppingCartDetail } = require("./shoppingCartDetail");
 

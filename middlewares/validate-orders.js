@@ -1,5 +1,12 @@
 const { request, response } = require("express");
-const { Order, Product, OrderDetail, ShoppingCartDetail } = require("../models");
+
+const { 
+  Product, 
+  Order, 
+  OrderDetail, 
+  ShoppingCartDetail 
+} = require("../models");
+
 const { isValidObjectId } = require("mongoose");
 
 /**

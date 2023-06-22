@@ -1,5 +1,5 @@
 const { request, response } = require("express");
-const { Address, Coupon } = require("../models");
+const { Address } = require("../models");
 
 
 const getAddress = async (req = request, res = response) => {

@@ -14,7 +14,12 @@ const {
     isArrayOfObject,
     existsShoppingCartById
 } = require("../helpers");
-const { getDetailsByIdShoppingCart, updateShoppingCartDetail } = require("../controllers/shoppingCartDetail");
+
+const { 
+    getDetailsByIdShoppingCart, 
+    updateShoppingCartDetail 
+} = require("../controllers/shoppingCartDetail");
+
 const { deleteOrderDetail } = require("../controllers/orderDetail");
 
 

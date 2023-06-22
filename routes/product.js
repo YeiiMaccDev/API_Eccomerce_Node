@@ -8,7 +8,10 @@ const {
     isRole
 } = require("../middlewares");
 
-const { existsProductById, existsCategoryById } = require("../helpers/db-validators");
+const { 
+    existsProductById, 
+    existsCategoryById 
+} = require("../helpers/db-validators");
 
 const { 
     getProducts, 

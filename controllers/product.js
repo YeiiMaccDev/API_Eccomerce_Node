@@ -1,6 +1,5 @@
 const { request, response } = require("express");
 const { Product } = require("../models");
-const { getCategoryById } = require("./category");
 
 
 const getProducts = async (req = request, res = response) => {

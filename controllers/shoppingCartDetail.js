@@ -1,9 +1,16 @@
 const { request, response } = require("express");
-const { Product, ShoppingCartDetail, ShoppingCart } = require("../models");
+
+const { 
+    Product, 
+    ShoppingCartDetail, 
+    ShoppingCart 
+} = require("../models");
+
 const {
     calculatePriceTotal,
     calculateTotalShoppingCartWithoutCoupon
 } = require("../helpers");
+
 const { updateTotalShoppingCartWithCoupon } = require("./coupon");
 
 const getDetailsByIdShoppingCart = async (req = request, res = response) => {

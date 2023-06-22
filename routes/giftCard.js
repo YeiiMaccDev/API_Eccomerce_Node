@@ -6,6 +6,7 @@ const {
     isAdminRole, 
     validateFields 
 } = require("../middlewares");
+
 const { 
     getGiftCards, 
     getGiftCardById, 
@@ -14,6 +15,7 @@ const {
     deleteGiftCard, 
     redeemGiftCard
 } = require("../controllers/giftCard");
+
 const { existsGiftCardById } = require("../helpers");
 
 

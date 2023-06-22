@@ -1,7 +1,11 @@
 const { request, response } = require("express");
 const { v4: uuidv4 } = require('uuid');
 
-const { Coupon, Order, ShoppingCart } = require("../models");
+const { 
+    Coupon, 
+    Order, 
+    ShoppingCart 
+} = require("../models");
 
 
 const getCoupons = async (req = request, res = response) => {

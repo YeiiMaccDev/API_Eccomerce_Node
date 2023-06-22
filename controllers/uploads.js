@@ -2,14 +2,12 @@ const path = require("path");
 const fs = require("fs");
 const { request, response } = require("express");
 
-
-
-
 const { uploadsFiles,
     isValidFileFormat,
     validateImages,
     uploadImagesCloudinary
 } = require("../helpers");
+
 const { User, Product } = require("../models");
 
 const uploadFiles = async (req = request, res = response) => {

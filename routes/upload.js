@@ -7,12 +7,14 @@ const {
     updateImage,
     updateCloudImages
 } = require("../controllers/uploads");
+
 const {
     validateFields,
     validateUploadFiles,
     validateJWT,
     isSameUserOrValidRoleToUpdateImages
 } = require("../middlewares");
+
 const { iscollectionsAuthorized } = require("../helpers");
 
 const collectionsAuthorized = ['users', 'products'];

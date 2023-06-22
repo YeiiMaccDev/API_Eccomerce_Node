@@ -4,7 +4,6 @@ const { isValidObjectId } = require("mongoose");
 const {
     Category,
     Product,
-    Role,
     User
 } = require("../models");
 

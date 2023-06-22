@@ -1,4 +1,6 @@
 const { Router } = require("express");
+const { check } = require("express-validator");
+
 const {
     getAddress,
     getAddressById,
@@ -6,8 +8,13 @@ const {
     updateAddress,
     deleteAddress
 } = require("../controllers/address");
-const { check } = require("express-validator");
-const { validateFields, validateJWT, isAdminRole } = require("../middlewares");
+
+const { 
+    validateFields, 
+    validateJWT, 
+    isAdminRole 
+} = require("../middlewares");
+
 const { existsAddressById } = require("../helpers");
 
 

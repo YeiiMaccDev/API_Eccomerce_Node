@@ -15,7 +15,14 @@ const {
     isArrayOfObject,
     existsShoppingCartById
 } = require("../helpers");
-const { getShoppingCarts, getShoppingCartById, createShoppingCart, updateShoppingCart, deleteShoppingCart } = require("../controllers/shoppingCart");
+
+const { 
+    getShoppingCarts, 
+    getShoppingCartById, 
+    createShoppingCart, 
+    updateShoppingCart, 
+    deleteShoppingCart 
+} = require("../controllers/shoppingCart");
 
 
 const router = Router();

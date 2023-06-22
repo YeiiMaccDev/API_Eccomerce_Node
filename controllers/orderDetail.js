@@ -1,10 +1,20 @@
 const { request, response } = require("express");
-const { Order, Product, OrderDetail } = require("../models");
+
+const { 
+    Order, 
+    OrderDetail, 
+    Product 
+} = require("../models");
+
 const { 
     calculatePriceTotal, 
     calculateTotalOrderWithoutCoupon 
 } = require("../helpers");
-const { updateTotalOrderWithCoupon, redeemCouponOnOrder } = require("./coupon");
+
+const { 
+    updateTotalOrderWithCoupon, 
+    redeemCouponOnOrder 
+} = require("./coupon");
 
 const getOrderDetailsByIdOrder = async (req = request, res = response) => {
     try {
