@@ -76,10 +76,6 @@ router.put('/:id', [
     check('address', 'Dirección no es un ID válido.').optional().isMongoId(),
     validateFields,
     check('address').optional().custom(existsAddressById),
-    validateFields,
-    check('payment', 'Pago no es un ID válido.').optional().isMongoId(),
-    // validateFields,
-    // check('payment').optional().custom(existsPaymentById),
     validateFields
 ], updateOrder);
 

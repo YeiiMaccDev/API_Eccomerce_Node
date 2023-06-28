@@ -20,6 +20,7 @@ class Server {
             orders: '/api/orders',
             orderDetails: '/api/order-details',
             products: '/api/products',
+            payments: '/api/payments',
             search: '/api/search',
             shoppingCart: '/api/shopping-cart',
             shoppingCartDetails: '/api/shopping-cart-details',
@@ -70,6 +71,7 @@ class Server {
         this.app.use(this.paths.orders, require('../routes/order'))
         this.app.use(this.paths.orderDetails, require('../routes/orderDetail'))
         this.app.use(this.paths.products, require('../routes/product'))
+        this.app.use(this.paths.payments, require('../routes/payment'))
         this.app.use(this.paths.search, require('../routes/search'))
         this.app.use(this.paths.shoppingCart, require('../routes/shoppingCart'))
         this.app.use(this.paths.shoppingCartDetails, require('../routes/shoppingCartDetail'))

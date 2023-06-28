@@ -49,7 +49,7 @@ const createOrder = async (req = request, res = response) => {
 
 const updateOrder = async (req = request, res = response) => {
     const { id } = req.params;
-    const { status, customer, orderStatus, payment, address } = req.body;
+    const { status, customer, orderStatus, address } = req.body;
 
     const statusOrderUpdate = ['pending', 'confirmed', 'processing']
     const orderTemp = await Order.findById(id);
@@ -71,10 +71,6 @@ const updateOrder = async (req = request, res = response) => {
     if (orderTemp.orderStatus === 'pending') {
         if (orderStatus === 'cancelled') {
             dataToUpdate.orderStatus = 'cancelled';
-        }
-        if (payment) {
-            dataToUpdate.payment = payment;
-            dataToUpdate.orderStatus = 'confirmed';
         }
     }
 

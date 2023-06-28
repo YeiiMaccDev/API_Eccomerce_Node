@@ -12,10 +12,8 @@ const OrderSchema = Schema({
         required: true
     },
     payment: {
-        type: String
-        // type: Schema.Types.ObjectId,
-        // ref: 'Payment',
-        // required: true
+        type: Schema.Types.ObjectId,
+        ref: 'Payment'
     },
     coupon: {
         type: Schema.Types.ObjectId,

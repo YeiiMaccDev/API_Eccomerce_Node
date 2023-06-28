@@ -7,7 +7,8 @@ const {
     Address,
     Coupon,
     GiftCard,
-    ShoppingCart
+    ShoppingCart,
+    Payment
 } = require('../models');
 
 const isValidRole = async (role = '') => {
@@ -92,6 +93,27 @@ const existsGiftCardById = async (id = '') => {
     }
 }
 
+const existsPaymentById = async (id = '') => {
+    const existsPayment = await Payment.findById(id);
+
+    if (!existsPayment) {
+        throw new Error(`El pago con con id ' ${id} ' no está registrado.`);
+    }
+}
+
+
+/**
+ * Validate authorized payment types.
+ */
+
+const isAuthorizedPaymentType = (paymentType = '', authorizedPaymentType = []) => {
+    const isIncluded = authorizedPaymentType.includes(paymentType);
+    if (!isIncluded) {
+        throw new Error(`Tipo de pago (${paymentType}) no está autorizado, Autorizados: ${authorizedPaymentType}`);
+    }
+    return true;
+}
+
 /**
  * Validate authorized collections.
  */
@@ -123,9 +145,11 @@ module.exports = {
     existsCouponById,
     existsGiftCardById,
     existsProductById,
+    existsPaymentById,
     existsUserById,
     existsOrderById,
     existsShoppingCartById,
+    isAuthorizedPaymentType,
     iscollectionsAuthorized,
     isArrayOfObject
 }
